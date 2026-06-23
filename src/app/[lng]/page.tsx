@@ -41,35 +41,48 @@ const projectPreviews = [
   },
 ];
 
-// Orbit configuration
-// The pivot is placed far to the right (outside viewport) so only the
-// left-facing vertical semi-circle (west arc) is visible on-screen.
-const ORBIT_R = 680; // radius in px
-const ORBIT_STEPS = 120; // keyframe resolution for a smooth arc
+// Orbit configuration — elliptical path.
+//
+// Why elliptical instead of circular?
+// With the pivot at right:-380px, the visible horizontal arc spans
+// cos(θ) < -0.515 → ~121° to 239° (118° window). A circular orbit at
+// r=680 would displace cards ±589 px vertically at those angles —
+// far outside any viewport. Splitting into separate x/y radii lets us
+// push cards deep enough into the column while clamping vertical travel.
+//
+//   ORBIT_RX = 520 → at θ=180°, card left edge sits ~252 px from right
+//              column edge (well inside, fully readable).
+//   ORBIT_RY = 250 → max vertical displacement ±250 px from pivot center,
+//              keeping all cards comfortably within the viewport height.
+const ORBIT_RX   = 520; // horizontal semi-axis (px)
+const ORBIT_RY   = 250; // vertical semi-axis   (px)
+const ORBIT_STEPS = 120;
 const CARD_W = 224;
 const CARD_H = 144;
 const NUM_CARDS = projectPreviews.length; // 6 cards
 
-// Build smooth orbit keyframes for a single card.
-// `index` spreads cards evenly around the full circle so only ~3 are
-// visible inside the right column at any time.
-// The pivot origin is at (0,0) — the parent element is positioned at the
-// far-right pivot point in the DOM, so cards radiate leftward.
+// Choreographed 3-card grouping (60° stagger, clockwise motion):
+//
+//   index 0 → startDeg 240° — "exit"  card, bottom of arc, fading out
+//   index 1 → startDeg 180° — "apex"  card, leftmost point, fully visible
+//   index 2 → startDeg 120° — "entry" card, top of arc,    fading in
+//   index 3 → startDeg  60° — hidden on eastern arc (next in queue)
+//   index 4 → startDeg   0° — hidden on eastern arc
+//   index 5 → startDeg -60° — hidden on eastern arc
+//
+// At any instant exactly 3 cards lie within the 121°–239° visible window.
+// The top/bottom gradient fades in OrbitalProjectShowcase soften entry/exit.
 function buildOrbitKeyframes(index: number) {
-  // Stagger start angle so cards are evenly spread around the circle.
-  // Offset so the visible arc (west semi-circle, ~270° to 90° going CCW)
-  // always has ~2-3 cards visible at a time.
-  const startDeg = 180 + (index / NUM_CARDS) * 360; // spread 0-360°
+  const startDeg = 240 - index * 60;
   const x: number[] = [];
   const y: number[] = [];
 
   for (let step = 0; step <= ORBIT_STEPS; step++) {
-    // Advance angle clockwise (negative direction in standard math)
     const angleDeg = startDeg - (step / ORBIT_STEPS) * 360;
     const angleRad = (angleDeg * Math.PI) / 180;
-    // Card center relative to pivot (pivot is the orbit center)
-    x.push(Math.cos(angleRad) * ORBIT_R - CARD_W / 2);
-    y.push(Math.sin(angleRad) * ORBIT_R - CARD_H / 2);
+    // Elliptical keyframes: x and y use independent semi-axes.
+    x.push(Math.cos(angleRad) * ORBIT_RX - CARD_W / 2);
+    y.push(Math.sin(angleRad) * ORBIT_RY - CARD_H / 2);
   }
 
   return { x, y };
