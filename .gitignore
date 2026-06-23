@@ -5,3 +5,5 @@ plans/
 task/
 .github/
 .vscode/
+node_modules/
+.next/
