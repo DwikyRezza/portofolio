@@ -1,128 +1,76 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { getProjects, ProjectSummaryDTO } from "../../features/projects/infrastructure/service";
-import { FeatureCard } from "../../features/projects/presentation/FeatureCard";
-import { ProjectSummary } from "../../features/projects/presentation/ProjectSummary";
-
-interface PageProps {
-  params: {
-    lng: string;
-  };
-}
-
-export default function ProjectShowcasePage({ params }: PageProps) {
-  const lng = (params.lng === "en" || params.lng === "id" ? params.lng : "id") as "en" | "id";
-  
-  const [projectsList, setProjectsList] = useState<ProjectSummaryDTO[]>([]);
-  const [selectedProject, setSelectedProject] = useState<ProjectSummaryDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const data = await getProjects(lng);
-        setProjectsList(data);
-        if (data.length > 0) {
-          setSelectedProject(data[0]);
-        }
-      } catch (error) {
-        console.error("Failed to load projects:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadData();
-  }, [lng]);
-
-  const labels = {
-    en: {
-      title: "Project Showcase",
-      subtitle: "Selected works and technical summaries.",
-      emptyState: "No projects added yet. Please edit src/features/projects/infrastructure/data.ts to add projects.",
-      specs: {
-        technology: "Technology",
-        role: "Role",
-        year: "Year",
-        platform: "Platform",
-        visitProject: "Visit Live Site",
-      }
-    },
-    id: {
-      title: "Daftar Proyek",
-      subtitle: "Kumpulan karya terpilih dan ringkasan teknisnya.",
-      emptyState: "Belum ada proyek yang ditambahkan. Silakan edit src/features/projects/infrastructure/data.ts untuk menambahkan proyek.",
-      specs: {
-        technology: "Teknologi",
-        role: "Peran",
-        year: "Tahun",
-        platform: "Platform",
-        visitProject: "Kunjungi Situs",
-      }
-    }
-  };
-
-  const currentLabels = labels[lng];
-
+export default function Page() {
   return (
-    <main className="min-h-screen bg-[--color-paper-white] text-[--color-ink-black] py-12 px-6 md:px-12 max-w-6xl mx-auto">
-      <header className="mb-12 border-b border-[--color-border-gray] pb-8">
-        <h1 
-          className="text-4xl font-bold tracking-tight mb-2"
-          style={{
-            fontFamily: "var(--font-display, 'GT Sectra', serif)",
-            fontWeight: 400,
-          }}
-        >
-          {currentLabels.title}
+    <div className="flex flex-col gap-12 px-12 py-16">
+      {/* Identity Header */}
+      <header className="flex flex-col gap-4 border-b border-black pb-8">
+        <p className="text-xs uppercase tracking-widest text-zinc-400">
+          Identity Manifesto
+        </p>
+        <h1 className="text-4xl font-black tracking-tight text-black md:text-6xl">
+          MUHAMMAD DWIKY YANUAREZZA
         </h1>
-        <p 
-          className="text-lg text-[--color-charcoal]"
-          style={{
-            fontFamily: "var(--font-workhorse, 'Inter', sans-serif)",
-            fontWeight: 400,
-          }}
-        >
-          {currentLabels.subtitle}
+        <p className="text-xs uppercase tracking-widest text-zinc-400">
+          UNDERGRADUATE INFORMATION TECHNOLOGY STUDENT AT TELKOM UNIVERSITY
+          SURABAYA
         </p>
       </header>
 
-      {isLoading ? (
-        <div className="py-12 text-center text-[--color-charcoal]">Loading...</div>
-      ) : projectsList.length === 0 ? (
-        <div className="py-12 text-center text-[--color-charcoal] border border-dashed border-[--color-border-gray] rounded-[6px] p-8">
-          <p>{currentLabels.emptyState}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {/* Projects List */}
-          <div className="md:col-span-1 space-y-4">
-            {projectsList.map((project) => (
-              <FeatureCard
-                key={project.id}
-                title={project.title}
-                description={project.shortDescription}
-                isActive={selectedProject?.slug === project.slug}
-                onClick={() => setSelectedProject(project)}
-              />
-            ))}
-          </div>
+      {/* Manifesto Blocks */}
+      <div className="flex flex-col gap-8">
+        <article className="flex flex-col gap-3">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">
+            System Architecture
+          </p>
+          <p className="max-w-prose text-base leading-relaxed text-zinc-600">
+            Treat every module boundary as a load-bearing contract. Coupling is
+            admitted openly and paid for in compile time, not deferred to
+            runtime. State transitions stay deterministic; side effects are
+            quarantined to the layer that owns them. The 12-column grid is a
+            constraint, not a decoration; structural determinism outranks
+            visual freedom.
+          </p>
+        </article>
 
-          {/* Project Details Panel */}
-          <div className="md:col-span-2">
-            {selectedProject && (
-              <ProjectSummary
-                title={selectedProject.title}
-                description={selectedProject.longDescription}
-                projectUrl={selectedProject.projectUrl}
-                specs={selectedProject.specs}
-                labels={currentLabels.specs}
-              />
-            )}
-          </div>
-        </div>
-      )}
-    </main>
+        <article className="flex flex-col gap-3">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">
+            Computer Vision
+          </p>
+          <p className="max-w-prose text-base leading-relaxed text-zinc-600">
+            Detection pipelines are bounded by thermal throttling and queue
+            depth long before model size becomes the wall. YOLOv8 inference on
+            edge hardware trades peak accuracy for sustained frame rate.
+            Quantization collapses batch normalization layers; preprocessing
+            absorbs the precision loss upstream so the detector never receives
+            a degraded frame.
+          </p>
+        </article>
+
+        <article className="flex flex-col gap-3">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">
+            Mobile Persistence
+          </p>
+          <p className="max-w-prose text-base leading-relaxed text-zinc-600">
+            Background processes are reclaimed by the operating system without
+            negotiation. Every navigation is a serialization checkpoint and
+            every restore must complete inside one frame on the main isolate.
+            State that cannot survive process death was never owned;
+            persistence is the only source of truth the runtime will not
+            silently revoke.
+          </p>
+        </article>
+
+        <article className="flex flex-col gap-3">
+          <p className="text-xs uppercase tracking-widest text-zinc-400">
+            Engineering Ethos
+          </p>
+          <p className="max-w-prose text-base leading-relaxed text-zinc-600">
+            No claim ships on narrative. Every assertion resolves to a
+            measurable constraint: a latency budget, a memory ceiling, a frame
+            time floor. Marketing language is filed as a defect. This portfolio
+            reads as a system log, not a brochure.
+          </p>
+        </article>
+      </div>
+    </div>
   );
 }
